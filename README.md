@@ -238,6 +238,7 @@ failhard: True
 ...
 ```
 __小结__
+
 编写 playbook 或 state 时应当注意执行上下约束的默认行为，可以根据实际场景需求来更改约束行为。
  
 #### 指定主机组之外的主机执行
@@ -309,6 +310,7 @@ drwxr-xr-x 2 root root     6 May 10 17:15 dd
 通过结果可以看出，192.168.1.81 把任务指派给了 192.168.1.80 而 192.168.1.80 未在主机组中定义，只要能保证 ansible 操作机的 ssh 权限就可以在整个操作过程中任意指派主机来执行定义的模块。
 
 __Salt 实现__
+
 主要借助 salt 的 event/reactor 特性来实现，这里同样使用 nc 模拟
 ```shell
 # master 配置 reactor
@@ -455,6 +457,7 @@ nodegroups: # 此处为固定配置关键字，不能更改
 ```
 
 __Ansible__
+
 这里借助 ansible 的自定义模块以及 add_host 模块完成搭建主从主机数据结构的渲染。
 ```shell
 # 目录结构，其中 library 为 ansible 自定义模块的目录（可根据实际需求配置调整）
@@ -598,6 +601,7 @@ localhost                  : ok=2    changed=2    unreachable=0    failed=0    s
 上述中第二个 playbook 中打印的数据 "msg": "192.168.1.82 db_info: {'3306': '192.168.1.80', '3307': '192.168.1.81'}" 即为动态生成的数据结构，实际上第二个 playbook 就是真正运行搭建主从的部分。构建的主机信息中 192.168.1.82 为真正的主机地址，对应的是 slave 的角色，而 192.168.1.82 主机变量 db_info 中 3306 对应的 master 为 192.168.1.80 以及 3307 对应的 master 的 192.168.1.81。
 
 __Salt__
+
 这里主要用到 salt 的 orchestrate 服务编排以及 py 的渲染器(可以内嵌执行 python 模块代码)。
 ```shell
 # tree .
@@ -759,6 +763,7 @@ Total run time: 292.058 ms
 可见 stdout 输出内容与之前 ansible 一致，此处因为 salt 的 pillar 变量的特性，所以借助 grains 的 id 获取对应每个 target 对应的主机变量。
 
 __总结__
+
 基于不同的业务场景构建一个健全的主机数据结构是很有必要的，而通过动态的特性只需要给与特定参数即可按需生成对应的主机数据结构进而完成对应的业务操作。也能无缝的和 "cmdb" 等平台完成对接(此处后续会详细说明)。上述在执行过程中真正需要给定的参数为 port_numbers、newdb，ansible 可以通过命令行 -e 'vars' 或者通过 -e '@file.yaml' 传入，而 salt 则通过 pillar='vars' 选项或者 pillar=$(generate_vars_scripts) 输入。
  
 #### 限制指定部分任务
@@ -824,6 +829,7 @@ PLAY RECAP *********************************************************************
 ansible 中除了 task 外还可以对 play、role、include打一个tag(标签)来限制执行，此处详见 [ansible_tags](https://docs.ansible.com/ansible/latest/user_guide/playbooks_tags.html)
  
 __Salt__
+
 salt state 本身支持选择 sls 任务模块列表如：salt '*' state.apply stuff,pkgs，指定 exclude="[{'id': 'id_to_exclude'}, {'sls': 'sls_to_exclude'}]" 反向排除不需要执行的任务，亦或是选择需要执行的单个 task_id 如：salt '*' state.sls_id my_state my_module pillar='{"foo": "bar"}', 但总体上而言不如 ansible 的 tag 那样更为灵活，不过我们可以通过 salt 的 jinja render 来达到类似的实现。
 ```shell
 # 自定义模块：list_tag_filter
@@ -896,6 +902,7 @@ Total run time:  19.840 ms
 结合 salt 的 pillar 与 jinja 的渲染机能能够完成更为灵活的条件匹配进而达到限制执行的目录。
  
 __总结__
+
 在编写角色或者公式中不管 ansible 还是 salt 限制执行都不是必须的，不过在实际场景中为了能够让执行集合适配更多的执行调用场景，除了更细化的文件模块拆分，对相关任务做划分类别的标签处理能大大提供封装工具的通用性。
  
 #### 任务进度一致性
