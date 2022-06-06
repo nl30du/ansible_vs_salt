@@ -247,6 +247,7 @@ __小结__
 这类的场景切入例如：搭建 mysql 主从时，需要在 master 主机上做对应的同步账号授权以及数据导出(不使用备份)，针对此种场景构建主机时只需要包含 slave 主机即可，然后对每个 slave 主机绑定上对应的 master 主机的信息即可，这样就会显得构建的主机信息层次非常清晰简练。
 
 __Ansible 实现__
+
 主要借助 ansible 的 delegate_to 特性来实现，以下为模拟搭建主从时同步导出数据，这里使用 nc 模拟
 ```shell
 # cat hosts
@@ -384,6 +385,7 @@ drwxr-xr-x 2 root root     6 May 10 17:15 dd
 一、手动维护一个相对固定的主机组信息比如一个配置记录主机组信息的文件
 
 __Ansible__
+
 ansible 这部分的实现较为简单，可以修改默认的 hosts 文件，也可创建自定义的 hosts 文件
 ```shell
 # cat hosts
@@ -408,6 +410,7 @@ ansible 这部分的实现较为简单，可以修改默认的 hosts 文件，�
 }
 ```
 __Salt__
+
 salt 主机组的构建需要在 master 的配置文件中定义对应的 nodegroup，定义好后后续修改 nodegroup 的内容，不需要重启 salt-master
 ```shell
 # cat /etc/salt/master
